@@ -2,8 +2,6 @@ import pathlib
 import numpy as np
 from nilearn import masking
 from nilearn.image import iter_img
-from nilearn.image import load_img
-from nilearn.image import index_img
 from nilearn.masking import apply_mask
 from nilearn.image import binarize_img
 from nilearn.decomposition import CanICA
