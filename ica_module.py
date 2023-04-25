@@ -5,9 +5,12 @@ from nilearn.image import iter_img
 from nilearn.masking import apply_mask
 from nilearn.image import binarize_img
 from nilearn.decomposition import CanICA
+from nilearn.plotting import plot_prob_atlas
+from nilearn.plotting import plot_stat_map, show
 
+NonePath = type('NonePath', (), {'resolve': lambda: None})
 
-ICS_PATH = pathlib.PurePath('/data/origami/niusha/code/local-experiment/io/ICAs')
+ICS_PATH = pathlib.Path('/data/origami/niusha/code/local-experiment/io/ICAs')
 io_path = ICS_PATH.parent
 n_components = 30
 
@@ -41,7 +44,7 @@ def ICA_decomposition(filenames, group, i, path=ICS_PATH, n=n_components):
 
 
 
-def Means_after_masking(ICAs,DBM_maps,n=n_components):
+def Means_after_masking(ICAs,DBM_maps,path=NonePath,group=""):
     """
     This function first extracts a mask from each IC and then applies it to each subject.
     After extracting regions of interest, the function calculates the mean value of these regions
@@ -50,11 +53,22 @@ def Means_after_masking(ICAs,DBM_maps,n=n_components):
     inputs:
         ICAs: IC components
         DBM_maps: input images; a 4 D image
+        path: Directory to save masks ans masked data.
+ 
     outputs:
         means_after_mask: an array contains the mean value of each input DBM after applying IC masks.
     """
+    mask_dir = path / "masks"
+    masked_data_dir = path / "masked_data"
+
+    if path.resolve()is not None:
+      mask_dir.mkdir(parents=True, exist_ok=True)  
+      masked_data_dir.mkdir(parents=True, exist_ok=True)
+
     size = DBM_maps.shape[3]
+    n = ICAs.shape[3]
     means_after_mask = np.zeros((n,size))
+
     for i, cur_ic in enumerate(iter_img(ICAs)):
 
         mask = binarize_img(masking.compute_brain_mask(
@@ -62,6 +76,22 @@ def Means_after_masking(ICAs,DBM_maps,n=n_components):
             mask_type='whole-brain',
             ))
         masked_data = apply_mask(imgs=DBM_maps,mask_img=mask) # is it ok to apply on whole subjects?
-        means_after_mask[i,:] = np.mean(np.around(np.nan_to_num(masked_data),decimals=5), axis=1)
-        
+        means_after_mask[i,:] = np.nanmean(masked_data, axis=1)
+
+        if path.resolve() is not None:
+            np.savetxt(masked_data_dir / f"masked_{group}_IC_{i}.txt",masked_data)
+            mask.to_filename(mask_dir / f"IC_{group}_{i}.nii.gz")
+
     return means_after_mask
+
+
+
+def plot_ICA_components(ICs):
+
+    plot_prob_atlas(ICs, title="All ICA components")
+
+    for i, cur_img in enumerate(iter_img(ICs)):
+        plot_stat_map(cur_img, display_mode="z", title="IC %d" %i,
+        cut_coords=1, colorbar=False)
+
+    # add show

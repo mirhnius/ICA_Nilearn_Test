@@ -20,18 +20,37 @@ def image_report(img):
     min_each_img = np.min(np.min(np.nanmin(data, axis=0),axis=0), axis=0)
     min_ = np.nanmin(data)
 
-    print(f"======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
+    print(f"     ======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
  
     names = ["Maximum", "Mean", "Minimum"]
     point_estimators = [max_, mean_, min_]
     distributions = [max_each_img, mean_each_img, min_each_img]
     for i in range(3):
-        print(f"======== {names[i]} ======== \n")
-        print(f"Overal {names[i]}: {point_estimators[i]:.2f}")
+        print(f"      ======== {names[i]} ========")
+        print(f"Overall {names[i]}: {point_estimators[i]:.2f}")
         plt.hist(distributions[i],n_bins)
-        plt.title(f"{names[i]} Values For Along image")
+        plt.title(f"{names[i]} Value For Each Subject")
         plt.show()
+
+
+def outlier_indices(imgs):
+
+    """
+    This function detects image slices with oddly big values.
+
+    Input:
+        img: a 4D image as input
+        
+    Output:
+        outliers: indices of problematic slices
+    """
     
+    thr = pow(10, 20)
+    outliers = []
+    data = imgs.get_fdata()
+    for i in range(data.shape[3]):
+        if np.abs(np.nanmax(data[...,i])) > thr or np.abs(np.nanmin(data[...,i])) > thr:
+            outliers.append(i)
 
-
+    return outliers
 
