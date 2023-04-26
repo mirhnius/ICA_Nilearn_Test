@@ -4,6 +4,7 @@ from nilearn import masking
 from nilearn.image import iter_img
 from nilearn.masking import apply_mask
 from nilearn.image import binarize_img
+from nilearn.image import new_img_like
 from nilearn.decomposition import CanICA
 from nilearn.plotting import plot_prob_atlas
 from nilearn.plotting import plot_stat_map, show
@@ -67,7 +68,7 @@ def Means_after_masking(ICAs,DBM_maps,path=NonePath,group=""):
 
     size = DBM_maps.shape[3]
     n = ICAs.shape[3]
-    means_after_mask = np.zeros((n,size))
+    means_after_mask = np.zeros((n,size), dtype='<f4')
 
     for i, cur_ic in enumerate(iter_img(ICAs)):
 
@@ -76,14 +77,14 @@ def Means_after_masking(ICAs,DBM_maps,path=NonePath,group=""):
             mask_type='whole-brain',
             ))
         masked_data = apply_mask(imgs=DBM_maps,mask_img=mask) # is it ok to apply on whole subjects?
-        means_after_mask[i,:] = np.nanmean(masked_data, axis=1)
+        means_after_mask[i,:] = np.nanmean(masked_data,axis=1)
 
         if path.resolve() is not None:
+            # new_img_like(DBM_maps, masked_data).to_filename(masked_data_dir / f"masked_{group}_IC_{i}.nii.gz")
             np.savetxt(masked_data_dir / f"masked_{group}_IC_{i}.txt",masked_data)
             mask.to_filename(mask_dir / f"IC_{group}_{i}.nii.gz")
 
     return means_after_mask
-
 
 
 def plot_ICA_components(ICs):
