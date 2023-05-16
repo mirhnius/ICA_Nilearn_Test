@@ -2,7 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from nilearn.image import index_img, iter_img
-from nilearn import plotting 
+from nilearn.plotting import plot_stat_map, plot_prob_atlas
 
 WIDTH_SIZE = 6
 HEIGHT_SIZE = 4
@@ -68,17 +68,31 @@ def two_array_diagrams(g1,g2,labels,title):
         plt.show()
 
 
-def random_plotter(imgs, n_rows=4, n_cols=5):
+def random_plotter(imgs, n_rows=4, n_cols=5, z_slice=1):
 
-    f, axes = plt.subplots(nrows=n_rows, ncols=n_cols)
     n_imgs = imgs.shape[3]
     plot_size = n_rows * n_cols
-    samples_indices = np.random.choice(n_imgs,plot_size)
+    samples_indices = np.random.choice(n_imgs,plot_size, replace=False)
     selected_imgs = index_img(imgs,samples_indices)
 
-    for i, cur_img, ax in zip(iter_img(selected_imgs), axes.flatten()):
-        
-        plotting.plot_stat_map(cur_img, display_mode="z", title="Subject %d" %samples_indices[i],
-        cut_coords=1, colorbar=False, axes=ax) 
-         
-    plt.show()
+    f, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(5+n_cols,4+n_rows))
+    for (i, ax), cur_img in zip(enumerate(axes.flatten()),iter_img(selected_imgs)):
+
+        display = plot_stat_map(cur_img, display_mode="z", cut_coords=z_slice, figure=f, 
+        axes=ax, colorbar=False, annotate=True) 
+        display.title(f'Sub {samples_indices[i]}', size=8)
+    # f.save("test.png")
+
+
+def plot_ICA_components(imgs, n_cols=5, z_slice=1): #maybe I shoul combine it with the other plotter
+
+    n_imgs = imgs.shape[3]
+    n_rows = int(np.ceil(n_imgs / n_cols))
+
+    plot_prob_atlas(imgs, title="All ICA components")
+
+    f, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(5+n_cols,4+n_rows))
+    for (i, ax), cur_img in zip(enumerate(axes.flatten()[:n_imgs]), iter_img(imgs)):
+        display = plot_stat_map(cur_img, display_mode="z", figure=f, 
+        axes=ax,cut_coords=z_slice, colorbar=False)
+        display.title(f'Component {i}', size=8)

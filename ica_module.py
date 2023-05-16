@@ -70,35 +70,17 @@ def Means_after_masking(ICAs,DBM_maps,path=NonePath,group=""):
     for i, cur_ic in enumerate(iter_img(ICAs)):
 
         mask_d = threshold_img(img=cur_ic, threshold="80%").get_fdata()
-        mask_d_repeat = np.reshape(
-            np.repeat(mask_d, n_subjects, axis=2),
-            DBM_maps.shape,
-            )
-        # print(mask_d_repeat.shape)
-        masked_data = np.multiply(data, mask_d_repeat) 
+        masked_data = data * np.reshape(mask_d, newshape=list(mask_d.shape)+[1])
 
         for j in range(n_subjects):
             subject = masked_data[...,j]
             index = np.nonzero(subject)
-            # print(subject[index].shape)
             means_after_mask[i,j] = np.nanmean(subject[index])
 
         if path.resolve() is not None:
-            # print(masked_data.shape)
             # new_img_like(DBM_maps, masked_data).to_filename(masked_data_dir / f"masked_{group}_IC_{i}.nii.gz")
             np.savetxt(masked_data_dir / f"masked_{group}_IC_{i}.txt", means_after_mask)
             mask = new_img_like(cur_ic, mask_d)
             mask.to_filename(mask_dir / f"IC_{group}_{i}.nii.gz")
 
     return means_after_mask
-
-
-def plot_ICA_components(ICs):
-
-    plot_prob_atlas(ICs, title="All ICA components")
-
-    for i, cur_img in enumerate(iter_img(ICs)):
-        plot_stat_map(cur_img, display_mode="z", title="IC %d" %i,
-        cut_coords=1, colorbar=False)
-
-    # add show
