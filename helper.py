@@ -1,6 +1,8 @@
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from nilearn.image import index_img, iter_img
+from nilearn import plotting 
 
 WIDTH_SIZE = 6
 HEIGHT_SIZE = 4
@@ -12,11 +14,11 @@ def image_report(img):
     data = img.get_fdata()
     type_ = type(data)
     max_each_img = np.max(np.max(np.nanmax(data, axis=0),axis=0), axis=0)
-    max_ = np.nanmax(data)
+    max_ = np.nanmax(max_each_img)
     mean_each_img = np.mean(np.mean(np.nanmean(data, axis=0),axis=0), axis=0)
-    mean_ = np.nanmean(data)
+    mean_ = np.nanmean(mean_each_img)
     min_each_img = np.min(np.min(np.nanmin(data, axis=0),axis=0), axis=0)
-    min_ = np.nanmin(data)
+    min_ = np.nanmin(min_each_img)
 
     print(f"     ======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
  
@@ -24,7 +26,7 @@ def image_report(img):
     point_estimators = [max_, mean_, min_]
     distributions = [max_each_img, mean_each_img, min_each_img]
     for i in range(3):
-        print(f"      ======== {names[i]} ========")
+        print(f"     ======== {names[i]} ========")
         print(f"Overall {names[i]}: {point_estimators[i]:.2f}")
         plt.hist(distributions[i],n_bins)
         plt.title(f"{names[i]} Value For Each Subject")
@@ -64,3 +66,19 @@ def two_array_diagrams(g1,g2,labels,title):
             )
         ax.legend(title="Group", loc='upper right', labels=labels)
         plt.show()
+
+
+def random_plotter(imgs, n_rows=4, n_cols=5):
+
+    f, axes = plt.subplots(nrows=n_rows, ncols=n_cols)
+    n_imgs = imgs.shape[3]
+    plot_size = n_rows * n_cols
+    samples_indices = np.random.choice(n_imgs,plot_size)
+    selected_imgs = index_img(imgs,samples_indices)
+
+    for i, cur_img, ax in zip(iter_img(selected_imgs), axes.flatten()):
+        
+        plotting.plot_stat_map(cur_img, display_mode="z", title="Subject %d" %samples_indices[i],
+        cut_coords=1, colorbar=False, axes=ax) 
+         
+    plt.show()
