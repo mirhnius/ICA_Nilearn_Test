@@ -69,7 +69,8 @@ def Means_after_masking(ICAs,DBM_maps,path=NonePath,group=""):
 
     for i, cur_ic in enumerate(iter_img(ICAs)):
 
-        mask_d = threshold_img(img=cur_ic, threshold="80%").get_fdata()
+        mask = threshold_img(img=cur_ic, threshold="99.6%", two_sided=False)
+        mask_d = mask.get_fdata()
         masked_data = data * np.reshape(mask_d, newshape=list(mask_d.shape)+[1])
 
         for j in range(n_subjects):
@@ -80,7 +81,6 @@ def Means_after_masking(ICAs,DBM_maps,path=NonePath,group=""):
         if path.resolve() is not None:
             # new_img_like(DBM_maps, masked_data).to_filename(masked_data_dir / f"masked_{group}_IC_{i}.nii.gz")
             np.savetxt(masked_data_dir / f"masked_{group}_IC_{i}.txt", means_after_mask)
-            mask = new_img_like(cur_ic, mask_d)
             mask.to_filename(mask_dir / f"IC_{group}_{i}.nii.gz")
 
     return means_after_mask

@@ -12,25 +12,41 @@ def image_report(img):
 
     n_bins = 3
     data = img.get_fdata()
-    type_ = type(data)
-    max_each_img = np.max(np.max(np.nanmax(data, axis=0),axis=0), axis=0)
-    max_ = np.nanmax(max_each_img)
-    mean_each_img = np.mean(np.mean(np.nanmean(data, axis=0),axis=0), axis=0)
-    mean_ = np.nanmean(mean_each_img)
-    min_each_img = np.min(np.min(np.nanmin(data, axis=0),axis=0), axis=0)
-    min_ = np.nanmin(min_each_img)
-
-    print(f"     ======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
+    
+    max_each_img = np.nanmax(data, axis=(0,1,2))
+    max_ = np.max(max_each_img)
+    
+    mean_each_img = np.nanmean(data, axis=(0,1,2))
+    mean_ = np.mean(mean_each_img)
+    
+    min_each_img = np.nanmin(data, axis=(0,1,2))
+    min_ = np.min(min_each_img)
+    
+    var_each_img = np.nanvar(data, axis=(0,1,2))
+    var_ = np.nanvar(data)
+    
+    nans = np.count_nonzero(np.isnan(data))
+    #   type_ = type(data)
+    # print(f"     ======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
  
-    names = ["Maximum", "Mean", "Minimum"]
-    point_estimators = [max_, mean_, min_]
-    distributions = [max_each_img, mean_each_img, min_each_img]
-    for i in range(3):
-        print(f"     ======== {names[i]} ========")
-        print(f"Overall {names[i]}: {point_estimators[i]:.2f}")
-        plt.hist(distributions[i],n_bins)
-        plt.title(f"{names[i]} Value For Each Subject")
-        plt.show()
+    names = ["Maximum", "Minimum", "Mean", "Variance"]
+    point_estimators = [max_, mean_, min_, var_]
+    distributions = [max_each_img, min_each_img, mean_each_img, var_each_img]
+    
+    print(f"     ======== General Information ========")
+    print(f"Number of nan voxels: {nans}")
+    
+    for i in range(4):    
+        print(f"Overall {names[i]}: {point_estimators[i]:.4f}")
+        
+    f, axes = plt.subplots(nrows=1, ncols=4, figsize=(WIDTH_SIZE*3,HEIGHT_SIZE))    
+    for i in range(4):
+        sns.histplot(distributions[i], 
+            color=sns.color_palette('Set2')[1],
+            bins=n_bins, ax=axes[i]
+            )
+        axes[i].title.set_text(f"{names[i]} Value For Each Subject")
+    plt.show()
 
 
 def outlier_indices(imgs):
@@ -94,5 +110,5 @@ def plot_ICA_components(imgs, n_cols=5, z_slice=1): #maybe I shoul combine it wi
     f, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(5+n_cols,4+n_rows))
     for (i, ax), cur_img in zip(enumerate(axes.flatten()[:n_imgs]), iter_img(imgs)):
         display = plot_stat_map(cur_img, display_mode="z", figure=f, 
-        axes=ax,cut_coords=z_slice, colorbar=False)
+        axes=ax,cut_coords=z_slice, colorbar=True)
         display.title(f'Component {i}', size=8)
