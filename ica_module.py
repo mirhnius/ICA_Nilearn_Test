@@ -2,8 +2,7 @@ import pathlib
 import numpy as np
 from nilearn.image import binarize_img, new_img_like, iter_img, threshold_img
 from nilearn.decomposition import CanICA
-from nilearn.plotting import plot_prob_atlas
-from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import plot_prob_atlas, plot_stat_map, show
 
 NonePath = type('NonePath', (), {'resolve': lambda: None})
 
