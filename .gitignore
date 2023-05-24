@@ -2,3 +2,4 @@
 might.txt
 /nilearn_cache
 /__pycache__
+test_ica_module.py
