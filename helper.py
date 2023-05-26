@@ -30,7 +30,7 @@ def image_report(img):
     # print(f"     ======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
  
     names = ["Maximum", "Minimum", "Mean", "Variance"]
-    point_estimators = [max_, mean_, min_, var_]
+    point_estimators = [max_, min_, mean_, var_]
     distributions = [max_each_img, min_each_img, mean_each_img, var_each_img]
     
     print(f"     ======== General Information ========")

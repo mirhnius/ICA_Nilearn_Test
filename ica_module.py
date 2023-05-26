@@ -97,9 +97,7 @@ def Means_after_masking(ICAs, DBM_maps, path=NonePath, group="", func=threshold_
     n_subjects = data.shape[3]
     extracted_from_mask = np.zeros((n,n_subjects), dtype='<f8') #, dtype='<f4'
     data = DBM_maps.get_fdata()
-
     for i, cur_ic in enumerate(iter_img(ICAs)):
-
         masked_data, mask = func(data, cur_ic)
         
         if str(func) == "threshold_masking":
