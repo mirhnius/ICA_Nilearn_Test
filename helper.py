@@ -26,9 +26,7 @@ def image_report(img):
     var_ = np.nanvar(data)
     
     nans = np.count_nonzero(np.isnan(data))
-    #   type_ = type(data)
-    # print(f"     ======== data type ======== \n {type_}") #change it. I need the image datatype also I need memmap data type
- 
+   
     names = ["Maximum", "Minimum", "Mean", "Variance"]
     point_estimators = [max_, min_, mean_, var_]
     distributions = [max_each_img, min_each_img, mean_each_img, var_each_img]
@@ -100,7 +98,7 @@ def random_plotter(imgs, n_rows=4, n_cols=5, z_slice=1):
     # f.save("test.png")
 
 
-def plot_ICA_components(imgs, n_cols=5, z_slice=1): #maybe I shoul combine it with the other plotter
+def plot_ICA_components(imgs, n_cols=5, z_slice=1): #maybe I should combine it with the other plotter
 
     n_imgs = imgs.shape[3]
     n_rows = int(np.ceil(n_imgs / n_cols))

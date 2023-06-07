@@ -1,9 +1,9 @@
 import copy
 import pathlib
 import numpy as np
-from nilearn.image import binarize_img, new_img_like, iter_img, threshold_img
 from nilearn.decomposition import CanICA
-from nilearn.plotting import plot_prob_atlas, plot_stat_map, show
+from nilearn.image import binarize_img, new_img_like, iter_img, threshold_img
+
 
 NonePath = type('NonePath', (), {'resolve': lambda: None})
 
@@ -48,7 +48,7 @@ def mean_masking(data, mask, threshold="99.6%", two_sided=False):
     inputs:
         data: All subjects' data as a numpy array
         mask: Mask image
-        threshold:
+        threshold: specifying the quantile of data that data ponts smaller than will be replaced with zero.
         two_sided:
         
     outputs:
@@ -117,25 +117,27 @@ def apply_masker(ICAs, DBM_maps, path=NonePath, group="", func=mean_masking):
     outputs:
         extracted_from_mask: A numpy array that containes extracted data per each subject for each mask image.
     """
-    mask_dir = path / "masks"
-    masked_data_dir = path / "masked_data"
 
     if path.resolve()is not None:
-      mask_dir.mkdir(parents=True, exist_ok=True)  
-      masked_data_dir.mkdir(parents=True, exist_ok=True)
-      
+        mask_dir = path / "masks"
+        masked_data_dir = path / "masked_data"
+        mask_dir.mkdir(parents=True, exist_ok=True)  
+        masked_data_dir.mkdir(parents=True, exist_ok=True)
+    
+    data = DBM_maps.get_fdata()  
     n = ICAs.shape[3]
     n_subjects = data.shape[3]
     extracted_from_mask = np.zeros((n,n_subjects), dtype='<f8') #, dtype='<f4'
-    data = DBM_maps.get_fdata()
+
     
     for i, cur_ic in enumerate(iter_img(ICAs)):
-        masked_data, mask = func(data, cur_ic)
         
-        if str(func) == "mean_masking":
-            extracted_from_mask[i,:] = mean_calc(masked_data, mask.get_fdata())
+        if func == "mean_masking":
+            masked_data, mask = mean_masking(data, cur_ic)
+            extracted_from_mask[i,:] = mean_calc(masked_data)
             
-        elif  str(func) == "weighted_sum_masking": 
+        elif  func == "weighted_sum_masking": 
+            masked_data, mask = weighted_sum_masking(data, cur_ic)
             extracted_from_mask[i,:] = weighted_sum_calc(masked_data, mask.get_fdata())
         
         if path.resolve() is not None:
